@@ -1,0 +1,24 @@
+topologyKey: kubernetes.io/hostname
+ingress:
+  enabled: true
+  host: harbor.k-space.ee
+  tls:
+    host: "*.k-space.ee"
+  target: traefik.k-space.ee
+  class: traefik
+caches:
+  docker: true
+  quay: true
+image:
+  repository: goharbor
+  tag: v2.6.2
+persistence:
+  postgres:
+    storageClass: postgres
+    storage: 5Gi
+  registry:
+    storageClass: longhorn
+    storage: 30Gi
+
+# Harbor projects to initialize
+projects: []

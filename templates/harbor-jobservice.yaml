@@ -1,0 +1,155 @@
+---
+apiVersion: codemowers.io/v1alpha1
+kind: GeneratedSecret
+metadata:
+  name: harbor-jobservice
+spec:
+  mapping:
+    - key: JOBSERVICE_SECRET
+      value: "%(password)s"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-jobservice-env
+  labels:
+    app: harbor
+data:
+  CORE_URL: "http://harbor-core:80"
+  TOKEN_SERVICE_URL: "http://harbor-core:80/service/token"
+  REGISTRY_URL: "http://harbor-registry:5000"
+  REGISTRY_CONTROLLER_URL: "http://harbor-registry:8080"
+  METRIC_NAMESPACE: harbor
+  METRIC_SUBSYSTEM: jobservice
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harbor-jobservice
+  labels:
+    app: harbor
+data:
+  config.yml: |+
+    protocol: "http"
+    port: 8080
+    worker_pool:
+      workers: 1
+      backend: "redis"
+      redis_pool:
+        redis_url: "redis://harbor-jobservice-redis:6379/0"
+        namespace: "harbor_job_service_namespace"
+        idle_timeout_second: 3600
+    job_loggers:
+      - name: "STD_OUTPUT"
+        level: INFO
+    metric:
+      enabled: true
+      path: /metrics
+      port: 8001
+    loggers:
+      - name: "STD_OUTPUT"
+        level: INFO
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: harbor-jobservice
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  selector:
+    app: harbor
+    component: jobservice
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harbor-jobservice
+  labels:
+    app: harbor
+    component: jobservice
+spec:
+  replicas: 3
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels: &selectorLabels
+      app: harbor
+      component: jobservice
+  template:
+    metadata:
+      labels: *selectorLabels
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - amd64
+      securityContext:
+        runAsUser: 10000
+        fsGroup: 10000
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: jobservice
+          image: "{{ .Values.image.repository }}/harbor-jobservice:{{ .Values.image.tag }}"
+          readinessProbe:
+            httpGet:
+              path: /api/v1/stats
+              scheme: HTTP
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          env:
+            - name: REGISTRY_CREDENTIAL_USERNAME
+              value: harbor_registry_user
+            - name: REGISTRY_CREDENTIAL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-registry-credentials
+                  key: REGISTRY_CREDENTIAL_PASSWORD
+            - name: JOBSERVICE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-jobservice
+                  key: JOBSERVICE_SECRET
+            - name: JOB_SERVICE_POOL_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-jobservice-redis-secrets
+                  key: REDIS_URI
+            - name: CORE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-core-secret
+                  key: CORE_SECRET
+            - name: _REDIS_URL_CORE
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-core-redis-secrets
+                  key: REDIS_URI
+          envFrom:
+            - configMapRef:
+                name: harbor-jobservice-env
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 8001
+              name: metrics
+          volumeMounts:
+            - name: jobservice-config
+              mountPath: /etc/jobservice/config.yml
+              subPath: config.yml
+            - name: job-scandata-exports
+              mountPath: /var/scandata_exports
+      volumes:
+        - name: jobservice-config
+          configMap:
+            name: harbor-jobservice
+        - name: job-scandata-exports
+          emptyDir: {}

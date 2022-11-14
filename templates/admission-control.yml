@@ -1,0 +1,55 @@
+{{ if .Values.admissionController }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: admission-control
+spec:
+  secretName: admission-control
+  dnsNames:
+    - admission-control.harbor-operator.svc
+  issuerRef:
+    name: harbor-operator
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: harbor-operator-admission-control
+  annotations:
+    cert-manager.io/inject-ca-from: harbor-operator/admission-control
+webhooks:
+  - name: harbor-operator-admission-control.codemowers.io
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+        resources:
+          - pods
+        scope: Namespaced
+    clientConfig:
+      service:
+        namespace: harbor-operator
+        name: admission-control
+    admissionReviewVersions:
+      - v1
+    sideEffects: None
+    timeoutSeconds: 30
+    failurePolicy: Ignore
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admission-control
+  labels:
+    app.kubernetes.io/name: harbor-operator
+spec:
+  selector:
+    app.kubernetes.io/name: harbor-operator
+  ports:
+  - name: http
+    targetPort: 3001
+    port: 443
+{{ end }}

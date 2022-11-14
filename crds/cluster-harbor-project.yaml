@@ -1,0 +1,71 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: clusterharborprojects.codemowers.io
+spec:
+  group: codemowers.io
+  names:
+    plural: clusterharborprojects
+    singular: clusterharborproject
+    kind: ClusterHarborProject
+    shortNames:
+      - clusterharborproject
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Status
+          jsonPath: .status.projectCreation.state
+          type: string
+        - name: Errors
+          jsonPath: .status.kopf.progress.projectCreation.message
+          type: string
+        - name: Project ID
+          jsonPath: .status.projectCreation.id
+          type: integer
+        - name: Quota
+          jsonPath: .spec.quota
+          type: integer
+        - name: Public
+          jsonPath: .spec.public
+          type: boolean
+        - name: Cache
+          jsonPath: .spec.cache
+          type: boolean
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                projectCreation:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    state:
+                      type: string
+            spec:
+              type: object
+              properties:
+                public:
+                  type: boolean
+                  default: false
+                  description: Whether this project is publicly readable
+                cache:
+                  type: boolean
+                  default: false
+                  description: Whether this project enables caching from
+                    upstream Docker registry
+                quota:
+                  type: integer
+                  default: 2147483648
+          required:
+            - spec

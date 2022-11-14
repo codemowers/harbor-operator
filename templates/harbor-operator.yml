@@ -1,0 +1,129 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harbor-operator
+  labels:
+    app.kubernetes.io/name: harbor-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &selectorLabels
+      app.kubernetes.io/name: harbor-operator
+  template:
+    metadata:
+      labels: *selectorLabels
+    spec:
+      serviceAccountName: harbor-operator
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: {{ .Values.topologyKey }}
+            labelSelector:
+              matchLabels: *selectorLabels
+      containers:
+        - name: harbor-operator
+          image: codemowers/harbor-operator:latest
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          env:
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: HARBOR_URI
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-admin-secrets
+                  key: HARBOR_URI
+          volumeMounts:
+            - name: tls-config
+              mountPath: /tls
+              readOnly: true
+      volumes:
+        - name: tls-config
+          secret:
+            secretName: admission-control
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: harbor-operator
+rules:
+  - apiGroups:
+      - zalando.org
+    resources:
+      - clusterkopfpeerings
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - get
+  - apiGroups:
+      - codemowers.io
+    resources:
+      - clusterharborregistries
+      - clusterharborprojectmembers
+      - clusterharborprojects
+      - harborcredentials
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - codemowers.io
+    resources:
+      - clusterharborregistries/status
+      - clusterharborprojectmembers/status
+      - clusterharborprojects/status
+      - harborcredentials/status
+    verbs:
+      - patch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: harbor-operator
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: harbor-operator
+subjects:
+  - kind: ServiceAccount
+    name: harbor-operator
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  # TODO: With the ACL-s above no errors are reporter by Kopf but yet it doesn't work
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io

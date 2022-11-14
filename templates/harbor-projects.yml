@@ -1,0 +1,10 @@
+{{- range .Values.projects }}
+apiVersion: codemowers.io/v1alpha1
+kind: ClusterHarborProject
+metadata:
+  name: {{ . | quote }}
+spec:
+  cache: false
+  public: true
+  quota: 10737418240
+{{- end }}

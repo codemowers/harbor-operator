@@ -1,0 +1,26 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: harbor
+spec:
+  postgresVersion: 14
+  instances:
+    - name: postgres
+      replicas: 3
+      dataVolumeClaimSpec:
+        storageClassName: {{ .Values.storage.postgres.storageClass }}
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: {{ .Values.storage.postgres.storage }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: {{ .Values.topologyKey }}
+            labelSelector:
+              matchLabels:
+                postgres-operator.crunchydata.com/cluster: harbor
+  backups:
+    pgbackrest:
+      repos: []
