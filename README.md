@@ -2,7 +2,14 @@
 
 ## Background
 
-This operator is higly opinionated way to deploy Harbor in a Kubernetes cluster:
+Note that this project is NOT connected to [official Harbor operator](https://github.com/goharbor/harbor-operator#future-features).
+
+The main reason we decided to write our own operator was that the official
+operator was missing all the features we wanted to have and mainlining such
+features would likely take months.
+
+This operator is higly opinionated way to deploy Harbor in a Kubernetes cluster
+using Helm:
 
 * Only one Harbor instance per Kubernetes cluster
 * Nearly all components deployed in HA fashion
@@ -15,8 +22,13 @@ This operator is higly opinionated way to deploy Harbor in a Kubernetes cluster:
   * Sandbox dashboard adds `ClusterUser` resources when user logs in
 * Automate push/pull credential provisioning using HarborCredential CRD-s,
   to simplify working with Skaffold
-* [WIP] Pod admission mutation webhook to rewrite Pod images to use
+* Pod admission mutation webhook to rewrite Pod images to use
   proxy caches defined via `ClusterHarborProject` definitions with `cache: true`.
+
+Caveats:
+
+* User must have logged in with OIDC first before `ClusterHarborProjectMember`
+  CRD will have effect and it will take operator several minutes to pick up the change.
 
 
 ## Instantiating Harbor projects
@@ -56,6 +68,19 @@ metadata:
   name: quay.io
 spec:
   cache: true
+  public: true
+  quota: 10737418240
+```
+
+To instantiate Harbor project:
+
+```
+apiVersion: codemowers.io/v1alpha1
+kind: ClusterHarborProject
+metadata:
+  name: k-space
+spec:
+  cache: false
   public: true
   quota: 10737418240
 ```

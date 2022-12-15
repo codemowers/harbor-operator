@@ -1,4 +1,7 @@
+# Availability zone key for pods
 topologyKey: kubernetes.io/hostname
+
+# Harbor portal
 ingress:
   enabled: true
   host: harbor.k-space.ee
@@ -6,13 +9,22 @@ ingress:
     host: "*.k-space.ee"
   target: traefik.k-space.ee
   class: traefik
+
+# Instantiate proxy cache projects for known Docker registries
 caches:
   docker: true
   quay: true
+
+# Mutate pods for cached images
+admissionController: false
+
+# Harbor image repository and tag
 image:
   repository: goharbor
   tag: v2.6.2
-persistence:
+
+# Storage options
+storage:
   postgres:
     storageClass: postgres
     storage: 5Gi
