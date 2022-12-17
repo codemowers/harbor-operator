@@ -1,4 +1,3 @@
-{{ if .Values.admissionController }}
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -10,6 +9,7 @@ spec:
     - admission-control.harbor-operator.svc
   issuerRef:
     name: harbor-operator
+{{ if .Values.admissionController }}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
