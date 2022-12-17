@@ -27,7 +27,7 @@ spec:
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
-            runAsUser: 1000
+            runAsUser: 65534
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
