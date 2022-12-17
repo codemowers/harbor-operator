@@ -21,6 +21,20 @@ spec:
             labelSelector:
               matchLabels:
                 postgres-operator.crunchydata.com/cluster: harbor
+                postgres-operator.crunchydata.com/instance-set: postgres
   backups:
     pgbackrest:
-      repos: []
+      global:
+        repo1-retention-full: "0"
+        repo1-retention-full-type: time
+      repos:
+        - name: repo1
+          schedules:
+            full: "0 5 31 2 *"
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 100Mi
