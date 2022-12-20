@@ -15,6 +15,14 @@ spec:
           requests:
             storage: {{ .Values.storage.postgres.storage }}
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: {{ .Values.topologyKey }}
@@ -25,8 +33,28 @@ spec:
   backups:
     pgbackrest:
       global:
-        repo1-retention-full: "0"
+        repo1-retention-full: "1"
         repo1-retention-full-type: time
+      repoHost:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                  - amd64
+      jobs:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.io/arch
+                  operator: In
+                  values:
+                  - amd64
       repos:
         - name: repo1
           schedules:
