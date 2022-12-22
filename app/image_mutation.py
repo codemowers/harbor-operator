@@ -17,6 +17,8 @@ def parse_image(foo):
         org, image = image.rsplit("/", 1)
     except ValueError:
         org = "library"
+    if org == "docker.io":
+        org = "library"
     try:
         registry, org = org.rsplit("/", 1)
     except ValueError:
@@ -44,3 +46,4 @@ assert mutate_image("mongo", "harbor.k-space.ee", ("docker.io")) == "harbor.k-sp
 assert mutate_image("library/mongo", "harbor.k-space.ee", ("docker.io")) == "harbor.k-space.ee/docker.io/library/mongo"
 assert mutate_image("docker.io/library/mongo", "harbor.k-space.ee", ("docker.io")) == "harbor.k-space.ee/docker.io/library/mongo"
 assert mutate_image("docker.io/calico/typha:v3.24.5", "harbor.k-space.ee", ("docker.io")) == "harbor.k-space.ee/docker.io/calico/typha:v3.24.5"
+assert mutate_image("docker.io/mongo:6.0.3", "harbor.k-space.ee", ("docker.io")) == "harbor.k-space.ee/docker.io/library/mongo:6.0.3"
