@@ -14,7 +14,7 @@ def parse_image(foo):
         raise ValueError("%s does not match Docker image regex" % repr(foo))
     image, tag, digest = m.groups()
     try:
-        org, image = foo.rsplit("/", 1)
+        org, image = image.rsplit("/", 1)
     except ValueError:
         org = "library"
     try:
@@ -43,3 +43,4 @@ assert mutate_image("mongo:latest", "harbor.k-space.ee", ("docker.io")) == "harb
 assert mutate_image("mongo", "harbor.k-space.ee", ("docker.io")) == "harbor.k-space.ee/docker.io/library/mongo"
 assert mutate_image("library/mongo", "harbor.k-space.ee", ("docker.io")) == "harbor.k-space.ee/docker.io/library/mongo"
 assert mutate_image("docker.io/library/mongo", "harbor.k-space.ee", ("docker.io")) == "harbor.k-space.ee/docker.io/library/mongo"
+assert mutate_image("docker.io/calico/typha:v3.24.5", "harbor.k-space.ee", ("docker.io")) == "harbor.k-space.ee/docker.io/calico/typha:v3.24.5"
