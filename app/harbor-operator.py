@@ -19,11 +19,16 @@ app = Sanic("admission_control")
 async def admission_control_handler(request):
     patches = []
     for index, container in enumerate(request.json["request"]["object"]["spec"]["containers"]):
+        mutated_image = mutate_image(container["image"], harbor.hostname, cached_registries)
         patches.append({
             "op": "replace",
             "path": "/spec/containers/%d/image" % index,
-            "value": mutate_image(container["image"], harbor.hostname, cached_registries),
+            "value": mutated_image,
         })
+        print("Substituting %s with %s for pod %s/%s" % (
+            container["image"], mutated_image,
+            request.json["request"]["object"]["metadata"]["namespace"],
+            request.json["request"]["object"]["metadata"]["name"]))
     response = {
         "apiVersion": "admission.k8s.io/v1",
         "kind": "AdmissionReview",
