@@ -10,7 +10,19 @@ from sanic.response import json
 from image_mutation import mutate_image
 from harbor_wrapper import Harbor
 
-mutation_excluded_namespaces = set(["tigera-operator", "calico-system", "kube-system"])
+mutation_excluded_namespaces = set([
+    # Do not fiddle with CNI stuff
+    "kube-system", # kube-proxy hosted here
+    "tigera-operator",
+    "calico-system",
+
+    # Do not fiddle with CSI stuff
+    "longhorn-system",
+
+    # Don't touch Harbor itself
+    "harbor-operator",
+])
+
 harbor = Harbor(os.environ["HARBOR_URI"])
 cached_registries = set()
 app = Sanic("admission_control")
