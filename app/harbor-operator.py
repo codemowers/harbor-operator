@@ -10,6 +10,7 @@ from sanic.response import json
 from image_mutation import mutate_image
 from harbor_wrapper import Harbor
 
+mutation_excluded_namespaces = set(["tigera-operator", "calico-system", "kube-system"])
 harbor = Harbor(os.environ["HARBOR_URI"])
 cached_registries = set()
 app = Sanic("admission_control")
@@ -18,17 +19,21 @@ app = Sanic("admission_control")
 @app.post("/")
 async def admission_control_handler(request):
     patches = []
-    for index, container in enumerate(request.json["request"]["object"]["spec"]["containers"]):
-        mutated_image = mutate_image(container["image"], harbor.hostname, cached_registries)
-        patches.append({
-            "op": "replace",
-            "path": "/spec/containers/%d/image" % index,
-            "value": mutated_image,
-        })
-        print("Substituting %s with %s for pod %s/%s" % (
-            container["image"], mutated_image,
-            request.json["request"]["object"]["metadata"]["namespace"],
-            request.json["request"]["object"]["metadata"]["name"]))
+    pod_namespace = request.json["request"]["object"]["metadata"]["namespace"]
+    pod_name = request.json["request"]["object"]["metadata"].get("name", "")
+    pod_ref = "%s/%s" % (pod_namespace, pod_name)
+    if pod_namespace in mutation_excluded_namespaces:
+        print("Pod %s not mutated by namespace exclusion" % pod_ref)
+    else:
+        for index, container in enumerate(request.json["request"]["object"]["spec"]["containers"]):
+            mutated_image = mutate_image(container["image"], harbor.hostname, cached_registries)
+            patches.append({
+                "op": "replace",
+                "path": "/spec/containers/%d/image" % index,
+                "value": mutated_image,
+            })
+            print("Substituting %s with %s for pod %s" % (
+                container["image"], mutated_image, pod_ref))
     response = {
         "apiVersion": "admission.k8s.io/v1",
         "kind": "AdmissionReview",
