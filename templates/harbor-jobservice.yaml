@@ -1,6 +1,14 @@
 ---
 apiVersion: codemowers.io/v1alpha1
-kind: GeneratedSecret
+kind: Redis
+metadata:
+  name: jobservice
+spec:
+  class: ephemeral
+  capacity: 512Mi
+---
+apiVersion: codemowers.io/v1alpha1
+kind: Secret
 metadata:
   name: harbor-jobservice
 spec:
@@ -36,7 +44,6 @@ data:
       workers: 1
       backend: "redis"
       redis_pool:
-        redis_url: "redis://harbor-jobservice-redis:6379/0"
         namespace: "harbor_job_service_namespace"
         idle_timeout_second: 3600
     job_loggers:
@@ -121,7 +128,7 @@ spec:
             - name: JOB_SERVICE_POOL_REDIS_URL
               valueFrom:
                 secretKeyRef:
-                  name: harbor-jobservice-redis-secrets
+                  name: redis-jobservice-owner-secrets
                   key: REDIS_URI
             - name: CORE_SECRET
               valueFrom:
@@ -131,7 +138,7 @@ spec:
             - name: _REDIS_URL_CORE
               valueFrom:
                 secretKeyRef:
-                  name: harbor-core-redis-secrets
+                  name: redis-core-owner-secrets
                   key: REDIS_URI
           envFrom:
             - configMapRef:

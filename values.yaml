@@ -26,10 +26,10 @@ image:
 # Storage options
 storage:
   postgres:
-    storageClass: postgres
+    class: shared
     storage: 5Gi
   registry:
-    storageClass: longhorn
+    class: shared
     storage: 30Gi
 
 # Harbor projects to initialize

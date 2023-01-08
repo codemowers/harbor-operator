@@ -1,4 +1,20 @@
 ---
+apiVersion: codemowers.io/v1alpha1
+kind: PostgresDatabase
+metadata:
+  name: harbor
+spec:
+  capacity: {{ .Values.storage.postgres.storage }}
+  class: {{ .Values.storage.postgres.class }}
+---
+apiVersion: codemowers.io/v1alpha1
+kind: Redis
+metadata:
+  name: core
+spec:
+  class: ephemeral
+  capacity: 512Mi
+---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
@@ -18,7 +34,7 @@ spec:
     name: harbor-operator
 ---
 apiVersion: codemowers.io/v1alpha1
-kind: GeneratedSecret
+kind: Secret
 metadata:
   name: harbor-admin-secrets
 spec:
@@ -29,7 +45,7 @@ spec:
       value: "https://admin:%(password)s@{{ .Values.ingress.host }}"
 ---
 apiVersion: codemowers.io/v1alpha1
-kind: GeneratedSecret
+kind: Secret
 metadata:
   name: harbor-core-secret
 spec:
@@ -38,7 +54,7 @@ spec:
       value: "%(password)s"
 ---
 apiVersion: codemowers.io/v1alpha1
-kind: GeneratedSecret
+kind: Secret
 metadata:
   name: harbor-core-oidc-secret-encryption-key
 spec:
@@ -48,7 +64,7 @@ spec:
       value: "%(password)s"
 ---
 apiVersion: codemowers.io/v1alpha1
-kind: GeneratedSecret
+kind: Secret
 metadata:
   name: harbor-core-csrf-key
 spec:
@@ -115,7 +131,7 @@ metadata:
     app: harbor
     component: core
 spec:
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 0
   selector:
     matchLabels: &selectorLabels
@@ -185,37 +201,37 @@ spec:
             - name: POSTGRESQL_HOST
               valueFrom:
                 secretKeyRef:
-                  name: harbor-pguser-harbor
-                  key: host
+                  name: postgres-database-harbor-owner-secrets
+                  key: PGHOST
             - name: POSTGRESQL_PORT
               valueFrom:
                 secretKeyRef:
-                  name: harbor-pguser-harbor
-                  key: port
+                  name: postgres-database-harbor-owner-secrets
+                  key: PGPORT
             - name: POSTGRESQL_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: harbor-pguser-harbor
-                  key: dbname
+                  name: postgres-database-harbor-owner-secrets
+                  key: PGDATABASE
             - name: POSTGRESQL_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: harbor-pguser-harbor
-                  key: user
+                  name: postgres-database-harbor-owner-secrets
+                  key: PGUSER
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: harbor-pguser-harbor
-                  key: password
+                  name: postgres-database-harbor-owner-secrets
+                  key: PGPASSWORD
             - name: _REDIS_URL_CORE
               valueFrom:
                 secretKeyRef:
-                  name: harbor-core-redis-secrets
+                  name: redis-core-owner-secrets
                   key: REDIS_URI
             - name: _REDIS_URL_REG
               valueFrom:
                 secretKeyRef:
-                  name: harbor-registry-redis-secrets
+                  name: redis-registry-owner-secrets
                   key: REDIS_URI
             - name: CORE_SECRET
               valueFrom:
