@@ -15,6 +15,7 @@ mutation_excluded_namespaces = set([
     "kube-system", # kube-proxy hosted here
     "tigera-operator",
     "calico-system",
+    "metallb-system",
 
     # Do not fiddle with CSI stuff
     "longhorn-system",
