@@ -237,7 +237,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: redis-harbor-owner-secrets
-                  key: REDIS_URI
+                  key: REDIS_2_URI
             - name: CORE_SECRET
               valueFrom:
                 secretKeyRef:
