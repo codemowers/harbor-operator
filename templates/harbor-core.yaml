@@ -10,7 +10,7 @@ spec:
 apiVersion: codemowers.io/v1alpha1
 kind: Redis
 metadata:
-  name: core
+  name: harbor
 spec:
   class: ephemeral
   capacity: 512Mi
@@ -131,7 +131,7 @@ metadata:
     app: harbor
     component: core
 spec:
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 0
   selector:
     matchLabels: &selectorLabels
@@ -142,6 +142,11 @@ spec:
       labels: *selectorLabels
     spec:
       affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: {{ .Values.topologyKey }}
+            labelSelector:
+              matchLabels: *selectorLabels
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
@@ -226,12 +231,12 @@ spec:
             - name: _REDIS_URL_CORE
               valueFrom:
                 secretKeyRef:
-                  name: redis-core-owner-secrets
-                  key: REDIS_URI
+                  name: redis-harbor-owner-secrets
+                  key: REDIS_0_URI
             - name: _REDIS_URL_REG
               valueFrom:
                 secretKeyRef:
-                  name: redis-registry-owner-secrets
+                  name: redis-harbor-owner-secrets
                   key: REDIS_URI
             - name: CORE_SECRET
               valueFrom:

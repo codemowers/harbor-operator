@@ -31,6 +31,16 @@ Caveats:
   CRD will have effect and it will take operator several minutes to pick up the change.
 
 
+## Workarounds
+
+Should you end up in unexpected state where pod images get rewritten try
+following to disable pod image rewriting:
+
+```
+kubectl delete mutatingwebhookconfigurations/harbor-operator-admission-control
+```
+
+
 ## Instantiating Harbor projects
 
 To instantiate proxy cache project:

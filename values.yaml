@@ -27,10 +27,10 @@ image:
 storage:
   postgres:
     class: shared
-    storage: 5Gi
+    storage: 30Gi
   registry:
     class: shared
-    storage: 30Gi
+    storage: 100Gi
 
 # Harbor projects to initialize
 projects: []

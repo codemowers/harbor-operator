@@ -64,6 +64,11 @@ spec:
       labels: *selectorLabels
     spec:
       affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: {{ .Values.topologyKey }}
+            labelSelector:
+              matchLabels: *selectorLabels
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:

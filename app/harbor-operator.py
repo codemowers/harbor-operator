@@ -22,6 +22,7 @@ mutation_excluded_namespaces = set([
 
     # Don't touch Harbor itself
     "harbor-operator",
+    "redis-clusters",
 ])
 
 harbor = Harbor(os.environ["HARBOR_URI"])
