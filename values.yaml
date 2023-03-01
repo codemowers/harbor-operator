@@ -1,5 +1,5 @@
 # Availability zone key for pods
-topologyKey: kubernetes.io/hostname
+topologyKey: topology.kubernetes.io/zone
 
 # Harbor portal
 ingress:
