@@ -16,7 +16,17 @@ caches:
   quay: true
 
 # Mutate pods for cached images
-admissionController: false
+mutation:
+  enabled: false
+  exclude:
+    namespaces:
+      - kube-system
+      - tigera-operator
+      - calico-system
+      - metallb-system
+      - longhorn-system
+      - harbor-operator
+      - redis-clusters
 
 # Harbor image repository and tag
 image:

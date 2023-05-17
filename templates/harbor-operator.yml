@@ -38,6 +38,8 @@ spec:
                 secretKeyRef:
                   name: harbor-admin-secrets
                   key: HARBOR_URI
+            - name: EXCLUDED_NAMESPACES
+              value: "{{- join "," .Values.mutation.exclude.namespaces }}"
           volumeMounts:
             - name: tls-config
               mountPath: /tls

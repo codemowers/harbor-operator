@@ -10,20 +10,7 @@ from sanic.response import json
 from image_mutation import mutate_image
 from harbor_wrapper import Harbor
 
-mutation_excluded_namespaces = set([
-    # Do not fiddle with CNI stuff
-    "kube-system", # kube-proxy hosted here
-    "tigera-operator",
-    "calico-system",
-    "metallb-system",
-
-    # Do not fiddle with CSI stuff
-    "longhorn-system",
-
-    # Don't touch Harbor itself
-    "harbor-operator",
-    "redis-clusters",
-])
+EXCLUDED_NAMESPACES = os.environ["EXCLUDED_NAMESPACES"].split(",")
 
 harbor = Harbor(os.environ["HARBOR_URI"])
 cached_registries = set()
@@ -36,7 +23,7 @@ async def admission_control_handler(request):
     pod_namespace = request.json["request"]["object"]["metadata"]["namespace"]
     pod_name = request.json["request"]["object"]["metadata"].get("name", "")
     pod_ref = "%s/%s" % (pod_namespace, pod_name)
-    if pod_namespace in mutation_excluded_namespaces:
+    if pod_namespace in EXCLUDED_NAMESPACES:
         print("Pod %s not mutated by namespace exclusion" % pod_ref)
     else:
         for index, container in enumerate(request.json["request"]["object"]["spec"]["containers"]):

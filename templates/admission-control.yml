@@ -9,7 +9,7 @@ spec:
     - admission-control.harbor-operator.svc
   issuerRef:
     name: harbor-operator
-{{ if .Values.admissionController }}
+{{ if or (.Values.admissionController) (.Values.mutation.enabled) }}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
