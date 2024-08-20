@@ -1,0 +1,45 @@
+---
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
+metadata:
+  name: harbor-database
+spec:
+  size: 32
+  mapping:
+    - key: username
+      value: harbor-database
+    - key: password
+      value: "%(plaintext)s"
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: harbor-database
+spec:
+  instances: 2
+  primaryUpdateStrategy: unsupervised
+  bootstrap:
+    initdb:
+      database: harbor-database
+      owner: harbor-database
+      secret:
+        name: harbor-database
+  storage:
+    storageClass: {{ .Values.storage.database.storageClass }}
+    size: {{ .Values.storage.database.capacity }}
+  postgresql:
+    syncReplicaElectionConstraint:
+      enabled: true
+      nodeLabelsAntiAffinity:
+      - {{ .Values.topologyKey }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: harbor-database
+spec:
+  selector:
+    matchLabels:
+      postgresql: harbor-database
+  podMetricsEndpoints:
+  - port: metrics

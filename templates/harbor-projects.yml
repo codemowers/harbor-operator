@@ -1,5 +1,5 @@
 {{- range .Values.projects }}
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborProject
 metadata:
   name: {{ . | quote }}

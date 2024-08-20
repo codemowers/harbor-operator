@@ -2,9 +2,9 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: clusterharborprojectmembers.codemowers.io
+  name: clusterharborprojectmembers.codemowers.cloud
 spec:
-  group: codemowers.io
+  group: codemowers.cloud
   names:
     plural: clusterharborprojectmembers
     singular: clusterharborprojectmember
@@ -13,7 +13,7 @@ spec:
       - clusterharborprojectmember
   scope: Cluster
   versions:
-    - name: v1alpha1
+    - name: v1beta1
       served: true
       storage: true
       subresources:

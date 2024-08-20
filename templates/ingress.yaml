@@ -8,10 +8,11 @@ metadata:
     ingress.kubernetes.io/proxy-body-size: "0"
     ingress.kubernetes.io/ssl-redirect: "true"
     external-dns.alpha.kubernetes.io/target: "{{ .Values.ingress.target }}"
-    kubernetes.io/ingress.class: "{{ .Values.ingress.class }}"
+
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
+  ingressClassName: "{{ .Values.ingress.class }}"
   tls:
     - hosts:
         - "{{ .Values.ingress.tls.host }}"

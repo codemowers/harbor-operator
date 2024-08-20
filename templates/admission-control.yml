@@ -18,7 +18,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: harbor-operator/admission-control
 webhooks:
-  - name: harbor-operator-admission-control.codemowers.io
+  - name: harbor-operator-admission-control.codemowers.cloud
     rules:
       - apiGroups:
           - ""

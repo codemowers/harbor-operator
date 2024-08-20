@@ -1,12 +1,12 @@
 ---
-apiVersion: codemowers.io/v1alpha1
-kind: Secret
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
 metadata:
   name: harbor-jobservice
 spec:
   mapping:
     - key: JOBSERVICE_SECRET
-      value: "%(password)s"
+      value: "%(plaintext)s"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -126,8 +126,8 @@ spec:
             - name: JOB_SERVICE_POOL_REDIS_URL
               valueFrom:
                 secretKeyRef:
-                  name: redis-harbor-owner-secrets
-                  key: REDIS_1_URI
+                  name: harbor-session-storage
+                  key: JOB_SERVICE_POOL_REDIS_URL
             - name: CORE_SECRET
               valueFrom:
                 secretKeyRef:
@@ -136,8 +136,8 @@ spec:
             - name: _REDIS_URL_CORE
               valueFrom:
                 secretKeyRef:
-                  name: redis-harbor-owner-secrets
-                  key: REDIS_0_URI
+                  name: harbor-session-storage
+                  key: REDIS_URL_CORE
           envFrom:
             - configMapRef:
                 name: harbor-jobservice-env

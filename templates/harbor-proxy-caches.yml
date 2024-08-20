@@ -1,6 +1,6 @@
 {{ if .Values.caches.quay }}
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborRegistry
 metadata:
   name: quay.io
@@ -8,7 +8,7 @@ spec:
   type: quay
   endpoint: https://quay.io
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborProject
 metadata:
   name: quay.io
@@ -19,7 +19,7 @@ spec:
 {{ end  }}
 {{ if .Values.caches.docker }}
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborRegistry
 metadata:
   name: docker.io
@@ -27,7 +27,7 @@ spec:
   type: docker-hub
   endpoint: https://docker.io
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborProject
 metadata:
   name: docker.io

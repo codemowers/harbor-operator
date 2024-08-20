@@ -1,0 +1,21 @@
+{{ if .Values.ingress.enabled }}
+---
+apiVersion: codemowers.cloud/v1beta1
+kind: OIDCClient
+metadata:
+  name: harbor
+spec:
+  displayName: Harbor
+  uri: https://{{ .Values.ingress.host }}
+  redirectUris:
+    - https://{{ .Values.ingress.host }}/c/oidc/callback
+  grantTypes:
+    - authorization_code
+    - refresh_token
+  responseTypes:
+    - code
+  availableScopes:
+    - openid
+    - profile
+  pkce: false
+{{ end }}

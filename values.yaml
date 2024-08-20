@@ -4,11 +4,11 @@ topologyKey: topology.kubernetes.io/zone
 # Harbor portal
 ingress:
   enabled: true
-  host: harbor.k-space.ee
+  host: harbor.codemowers.eu
   tls:
-    host: "*.k-space.ee"
-  target: traefik.k-space.ee
-  class: traefik
+    host: "*.codemowers.eu"
+  target: traefik.codemowers.eu
+  class: shared
 
 # Instantiate proxy cache projects for known Docker registries
 caches:
@@ -35,12 +35,14 @@ image:
 
 # Storage options
 storage:
-  postgres:
-    class: shared
-    storage: 30Gi
-  registry:
-    class: shared
-    storage: 100Gi
+  session:
+    capacity: 1Gi
+  database:
+    storageClass: postgres
+    capacity: 1Gi
+  object:
+    bucketClass: shared
+    capacity: 100Gi
 
 # Harbor projects to initialize
 projects: []

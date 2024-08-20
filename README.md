@@ -13,13 +13,17 @@ using Helm:
 
 * Only one Harbor instance per Kubernetes cluster
 * Nearly all components deployed in HA fashion
+  * Object storage bucket via [minio-bucket-operator](https://github.com/codemowers/operatorlib/tree/main/samples/minio-bucket-operator)
+  * Dragonfly with 3 replicas as Redis replacement
+  * CloudNativePG cluster with 2 replicas
 * Automates Harbor project creation via `ClusterHarborProject` CRD
   * Create per user projects with quotas and password protection
   * Create proxy cache projects with quotas and password protection
 * Designed to work in conjunction with
-  [https://git.k-space.ee/k-space/sandbox-dashboard](sandbox-dashboard):
+  [https://git.k-space.ee/k-space/sandbox-dashboard](sandbox-dashboard) and
+  [https://github.com/passmower/passmower](Passmower):
+  * Passmower provisions OIDC User resources
   * Sandbox template repository contains `HarborCredential` definitions
-  * Sandbox dashboard adds `ClusterUser` resources when user logs in
 * Automate push/pull credential provisioning using HarborCredential CRD-s,
   to simplify working with Skaffold
 * Pod admission mutation webhook to rewrite Pod images to use
@@ -47,7 +51,7 @@ To instantiate proxy cache project:
 
 ```
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborRegistry
 metadata:
   name: quay.io
@@ -55,7 +59,7 @@ spec:
   type: quay
   endpoint: https://quay.io
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborRegistry
 metadata:
   name: docker.io
@@ -63,7 +67,7 @@ spec:
   type: docker-hub
   endpoint: https://docker.io
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborProject
 metadata:
   name: docker.io
@@ -72,7 +76,7 @@ spec:
   public: true
   quota: 10737418240
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborProject
 metadata:
   name: quay.io
@@ -85,7 +89,7 @@ spec:
 To instantiate Harbor project:
 
 ```
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: ClusterHarborProject
 metadata:
   name: k-space
@@ -103,7 +107,7 @@ push and pull secrets into namespaces:
 
 ```
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: HarborCredential
 metadata:
   name: kaniko
@@ -118,7 +122,7 @@ spec:
     - resource: repository
       action: push
 ---
-apiVersion: codemowers.io/v1alpha1
+apiVersion: codemowers.cloud/v1beta1
 kind: HarborCredential
 metadata:
   name: regcred

@@ -1,20 +1,4 @@
 ---
-apiVersion: codemowers.io/v1alpha1
-kind: PostgresDatabase
-metadata:
-  name: harbor
-spec:
-  capacity: {{ .Values.storage.postgres.storage }}
-  class: {{ .Values.storage.postgres.class }}
----
-apiVersion: codemowers.io/v1alpha1
-kind: Redis
-metadata:
-  name: harbor
-spec:
-  class: ephemeral
-  capacity: 512Mi
----
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
@@ -33,45 +17,46 @@ spec:
   issuerRef:
     name: harbor-operator
 ---
-apiVersion: codemowers.io/v1alpha1
-kind: Secret
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
 metadata:
   name: harbor-admin-secrets
 spec:
   mapping:
     - key: HARBOR_ADMIN_PASSWORD
-      value: "%(password)s"
+      value: "%(plaintext)s"
     - key: HARBOR_URI
-      value: "https://admin:%(password)s@{{ .Values.ingress.host }}"
+      value: "https://admin:%(plaintext)s@{{ .Values.ingress.host }}"
 ---
-apiVersion: codemowers.io/v1alpha1
-kind: Secret
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
 metadata:
   name: harbor-core-secret
 spec:
   mapping:
     - key: CORE_SECRET
-      value: "%(password)s"
+      value: "%(plaintext)s"
 ---
-apiVersion: codemowers.io/v1alpha1
-kind: Secret
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
 metadata:
   name: harbor-core-oidc-secret-encryption-key
 spec:
   size: 32
   mapping:
     - key: secretKey
-      value: "%(password)s"
+      value: "%(plaintext)s"
 ---
-apiVersion: codemowers.io/v1alpha1
-kind: Secret
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
+
 metadata:
   name: harbor-core-csrf-key
 spec:
   size: 32
   mapping:
     - key: CSRF_KEY
-      value: "%(password)s"
+      value: "%(plaintext)s"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -191,8 +176,8 @@ spec:
                   key: REGISTRY_CREDENTIAL_PASSWORD
             - name: DATABASE_TYPE
               value: postgresql
-            - name: POSTGRESQL_SSLMODE
-              value: require
+#            - name: POSTGRESQL_SSLMODE
+#              value: require
             - name: CSRF_KEY
               valueFrom:
                 secretKeyRef:
@@ -204,40 +189,31 @@ spec:
                   name: harbor-admin-secrets
                   key: HARBOR_ADMIN_PASSWORD
             - name: POSTGRESQL_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-database-harbor-owner-secrets
-                  key: PGHOST
+              value: harbor-database-rw
             - name: POSTGRESQL_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-database-harbor-owner-secrets
-                  key: PGPORT
+              value: "5432"
             - name: POSTGRESQL_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-database-harbor-owner-secrets
-                  key: PGDATABASE
+              value: harbor-database
             - name: POSTGRESQL_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: postgres-database-harbor-owner-secrets
-                  key: PGUSER
+                  name: harbor-database
+                  key: username
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-database-harbor-owner-secrets
-                  key: PGPASSWORD
-            - name: _REDIS_URL_CORE
+                  name: harbor-database
+                  key: password
+            - name: _REDIS_URL_CORE # REDIS_0_URL
               valueFrom:
                 secretKeyRef:
-                  name: redis-harbor-owner-secrets
-                  key: REDIS_0_URI
-            - name: _REDIS_URL_REG
+                  name: harbor-session-storage
+                  key: REDIS_URL_CORE
+            - name: _REDIS_URL_REG # REDIS 2 URL
               valueFrom:
                 secretKeyRef:
-                  name: redis-harbor-owner-secrets
-                  key: REDIS_2_URI
+                  name: harbor-session-storage
+                  key: REDIS_URL_REG
             - name: CORE_SECRET
               valueFrom:
                 secretKeyRef:

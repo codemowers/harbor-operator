@@ -105,8 +105,8 @@ async def projectCreation(name, namespace, body, **kwargs):
     if body["spec"]["cache"]:
         api_instance = client.CustomObjectsApi()
         try:
-            registry_spec = await api_instance.get_cluster_custom_object("codemowers.io",
-                "v1alpha1", "clusterharborregistries", name)
+            registry_spec = await api_instance.get_cluster_custom_object("codemowers.cloud",
+                "v1beta1", "clusterharborregistries", name)
         except ApiException as e:
             if e.status == 404:
                 raise kopf.TemporaryError("NO_REGISTRY")
@@ -144,8 +144,8 @@ HARBOR_ROLES = {
 async def memberCreation(name, namespace, body, **kwargs):
     api_instance = client.CustomObjectsApi()
     try:
-        project_spec = await api_instance.get_cluster_custom_object("codemowers.io",
-            "v1alpha1", "clusterharborprojects", body["spec"]["project"])
+        project_spec = await api_instance.get_cluster_custom_object("codemowers.cloud",
+            "v1beta1", "clusterharborprojects", body["spec"]["project"])
     except ApiException as e:
         if e.status == 404:
             raise kopf.TemporaryError("NO_PROJECT")
@@ -207,8 +207,8 @@ async def setup_db(app, loop):
     app.ctx.cached_registries = set()
     api_instance = client.CustomObjectsApi()
 
-    resp = await api_instance.list_cluster_custom_object("codemowers.io",
-        "v1alpha1", "clusterharborprojects")
+    resp = await api_instance.list_cluster_custom_object("codemowers.cloud",
+        "v1beta1", "clusterharborprojects")
 
     for body in resp["items"]:
         if not body["spec"]["cache"]:

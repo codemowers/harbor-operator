@@ -1,31 +1,23 @@
 ---
-apiVersion: codemowers.io/v1alpha1
-kind: Bucket
-metadata:
-  name: harbor
-spec:
-  capacity: {{ .Values.storage.registry.storage }}
-  class: {{ .Values.storage.registry.class }}
----
-apiVersion: codemowers.io/v1alpha1
-kind: Secret
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
 metadata:
   name: harbor-registry-credentials
 spec:
   mapping:
     - key: REGISTRY_CREDENTIAL_PASSWORD
-      value: "%(password)s"
+      value: "%(plaintext)s"
     - key: REGISTRY_HTPASSWD
       value: "harbor_registry_user:%(bcrypt)s"
 ---
-apiVersion: codemowers.io/v1alpha1
-kind: Secret
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
 metadata:
   name: harbor-registry
 spec:
   mapping:
     - key: REGISTRY_HTTP_SECRET
-      value: "%(password)s"
+      value: "%(plaintext)s"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -153,39 +145,36 @@ spec:
                   name: harbor-registry
                   key: REGISTRY_HTTP_SECRET
             - name: REGISTRY_REDIS_ADDR
-              valueFrom:
-                secretKeyRef:
-                  name: redis-harbor-owner-secrets
-                  key: REDIS_HOST_PORT
+              value: harbor-session-storage
             - name: REGISTRY_REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: redis-harbor-owner-secrets
-                  key: REDIS_PASSWORD
+                  name: harbor-session-storage
+                  key: password
             - name: REGISTRY_STORAGE_S3_ACCESSKEY
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: AWS_ACCESS_KEY_ID
             - name: REGISTRY_STORAGE_S3_SECRETKEY
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: AWS_SECRET_ACCESS_KEY
             - name: REGISTRY_STORAGE_S3_REGION
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: AWS_DEFAULT_REGION
             - name: REGISTRY_STORAGE_S3_REGIONENDPOINT
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: AWS_S3_ENDPOINT_URL
             - name: REGISTRY_STORAGE_S3_BUCKET
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: BUCKET_NAME
           ports:
             - containerPort: 5000
@@ -225,39 +214,36 @@ spec:
                   name: harbor-registry
                   key: REGISTRY_HTTP_SECRET
             - name: REGISTRY_REDIS_ADDR
-              valueFrom:
-                secretKeyRef:
-                  name: redis-harbor-owner-secrets
-                  key: REDIS_HOST_PORT
+              value: harbor-session-storage
             - name: REGISTRY_REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: redis-harbor-owner-secrets
-                  key: REDIS_PASSWORD
+                  name: harbor-session-storage
+                  key: password
             - name: REGISTRY_STORAGE_S3_ACCESSKEY
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: AWS_ACCESS_KEY_ID
             - name: REGISTRY_STORAGE_S3_SECRETKEY
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: AWS_SECRET_ACCESS_KEY
             - name: REGISTRY_STORAGE_S3_REGION
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: AWS_DEFAULT_REGION
             - name: REGISTRY_STORAGE_S3_REGIONENDPOINT
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: AWS_S3_ENDPOINT_URL
             - name: REGISTRY_STORAGE_S3_BUCKET
               valueFrom:
                 secretKeyRef:
-                  name: bucket-harbor-owner-secrets
+                  name: miniobucket-harbor-owner-secrets
                   key: BUCKET_NAME
           ports:
             - containerPort: 8080

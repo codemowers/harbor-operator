@@ -1,0 +1,51 @@
+---
+apiVersion: codemowers.cloud/v1beta1
+kind: SecretClaim
+metadata:
+  name: harbor-session-storage
+spec:
+  size: 32
+  mapping:
+    - key: password
+      value: "%(plaintext)s"
+    - key: REDIS_URL_CORE
+      value: "redis://:%(plaintext)s@harbor-session-storage/0"
+    - key: JOB_SERVICE_POOL_REDIS_URL
+      value: "redis://:%(plaintext)s@harbor-session-storage/1"
+    - key: REDIS_URL_REG
+      value: "redis://:%(plaintext)s@harbor-session-storage/2"
+---
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: harbor-session-storage
+spec:
+  authentication:
+    passwordFromSecret:
+      key: password
+      name: harbor-session-storage
+  replicas: 3
+  resources:
+    limits:
+      cpu: 1000m
+      memory: {{ .Values.storage.session.capacity }}
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app: harbor-session-storage
+          app.kubernetes.io/part-of: dragonfly
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: harbor-session-storage
+spec:
+  selector:
+    matchLabels:
+      app: harbor-session-storage
+      app.kubernetes.io/part-of: dragonfly
+  podMetricsEndpoints:
+    - port: admin
